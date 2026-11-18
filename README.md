@@ -62,7 +62,11 @@ No usar `127.0.0.1` como IP del Ubuntu: dentro del contenedor esa dirección apu
 | `POLL_INTERVAL` | Segundos entre consultas SNMP |
 | `RETENTION_DAYS` | Días de historial que se guardan |
 
-## Preparar el Ubuntu monitoreado
+## Preparar las dos VM Ubuntu para la demostración
+
+Repetir estos pasos en **cada VM Ubuntu Server**. Las dos deben tener una IP alcanzable desde la máquina donde corre Docker.
+
+**1. Instalar SNMP y abrir su configuración:**
 
 ```bash
 sudo apt update
@@ -70,21 +74,36 @@ sudo apt install -y snmpd snmp
 sudo nano /etc/snmp/snmpd.conf
 ```
 
-Configuración mínima. Reemplazar `192.168.1.10` por la IP de la PC donde corre Docker y `mi_community_lab` por la community elegida:
+**2. Reemplazar todo el contenido del archivo por estas dos líneas:**
 
 ```conf
 agentAddress udp:161
-rocommunity mi_community_lab 192.168.1.10/32 .1
+rocommunity mi_community_lab default .1
 ```
+
+Guardar y salir. `default` permite consultas desde cualquier IP con la community `mi_community_lab`, en modo de sólo lectura. **No hace falta indicar la IP de Docker.** Usar esta configuración sólo en la red del laboratorio.
+
+**3. Aplicar la configuración y comprobar SNMP:**
 
 ```bash
+# Iniciar SNMP también al encender la VM y aplicar los cambios.
+sudo systemctl enable snmpd
 sudo systemctl restart snmpd
 
-# Probar desde otra máquina (192.168.1.20 = IP del Ubuntu).
-snmpget -v2c -c mi_community_lab 192.168.1.20 1.3.6.1.2.1.1.5.0
+# Probar en la propia VM: debe devolver su nombre.
+snmpget -v2c -c mi_community_lab 127.0.0.1 1.3.6.1.2.1.1.5.0
+
+# Ver la IP de la VM para cargarla en la app.
+hostname -I
 ```
 
-SNMP v2c envía la community sin cifrar: usarlo sólo en la red del laboratorio.
+Sólo si UFW está activo (`sudo ufw status`), permitir SNMP con `sudo ufw allow 161/udp`.
+
+**4. Agregar las dos VM en la app:**
+
+En **Agregar host**, cargar cada servidor con su nombre, su IP, puerto `161` y community `mi_community_lab`. Usar la IP de cada VM, **no `127.0.0.1`**; esa dirección se usó arriba únicamente para la prueba local.
+
+Esperar la siguiente ronda de consultas: deben aparecer las dos tarjetas con sus métricas. La CPU puede tardar alrededor de un minuto en estar disponible después de iniciar SNMP.
 
 ## Qué explicar sobre Docker
 
