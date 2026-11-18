@@ -396,6 +396,12 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 18px;
       }
+      /* Cuatro servicios: cuadrícula de 2 × 2 en pantallas anchas. */
+      @media (min-width: 1201px) {
+        #serviceCards {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
       .host-card {
         display: block;
         position: relative;
@@ -1514,7 +1520,7 @@
               <p class="eyebrow">DOCKER ENGINE</p>
               <h1 id="appStatusTitle" tabindex="-1">Estado de la app</h1>
               <p class="subtitle">
-                Los tres contenedores de Nodo, consultados directamente a
+                Los cuatro contenedores de Nodo, consultados directamente a
                 Docker.
               </p>
             </div>
@@ -1888,7 +1894,8 @@
       const serviceInfo = {
         db: { title: "MariaDB", description: "Base de datos · db" },
         python: { title: "Python", description: "Recolector SNMP · python" },
-        web: { title: "Web", description: "Interfaz y API · web" },
+        api: { title: "API", description: "Flask · api" },
+        web: { title: "Web", description: "nginx · web" },
       };
       const dockerStates = {
         running: ["En ejecución", "up"],
@@ -1948,11 +1955,11 @@
         ).length;
         const starting = services.some((item) => item.health === "starting");
         $("appSummary").textContent = data
-          ? `${running} de 3 contenedores en ejecución`
+          ? `${running} de ${services.length} contenedores en ejecución`
           : "Estado no disponible";
         $("appSummaryDot").style.background = !data
           ? "var(--muted)"
-          : running === 3 && !unhealthy && !starting
+          : running === services.length && !unhealthy && !starting
             ? "var(--green)"
             : "var(--orange)";
         $("appSummaryNote").textContent = !data

@@ -1,6 +1,0 @@
-# API y página web en un único servicio.
-Flask==3.1.2
-# Conector puro Python para MariaDB/MySQL.
-PyMySQL==1.1.2
-# Cliente oficial de la API de Docker para consultar estados de contenedores.
-docker==7.1.0
